@@ -1,3 +1,5 @@
-This is the starting code for this tutorial.
+<!-- for the prisma  -->
 
-**IMPORTANT**: After cloning the repo, open the command line inside the project and run `npm i --legacy-peer-deps`.
+to see the data just go at
+npx prisma studio
+to see the all the data
