@@ -3,6 +3,7 @@ import Post from "@/components/posts/Post";
 import prisma from "@/lib/prisma";
 import { postDataInclude } from "@/lib/types";
 import Image from "next/image";
+import ForYouFeed from "./ForYouFeed";
 
 export default async function Home() {
   const posts = await prisma.post.findMany({
@@ -13,9 +14,10 @@ export default async function Home() {
     <main className="w-full min-w-0">
       <div className="w-full min-w-0 space-y-5">
         <PostEditor />
-        {posts.map((post) => (
+        {/* {posts.map((post) => (
           <Post key={post.id} post={post} />
-        ))}
+        ))} */}
+        <ForYouFeed />
       </div>
     </main>
   );
