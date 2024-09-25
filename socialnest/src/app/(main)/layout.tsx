@@ -4,6 +4,7 @@ import { ReactNode, useContext } from "react";
 import SessionProvider from "./SessionProvider";
 import Navbar from "./Navbar";
 import MenuBar from "./MenuBar";
+import { Toaster } from "@/components/ui/toaster";
 
 export default async function Layout({ children }: { children: ReactNode }) {
   const session = await validateRequest();
@@ -21,6 +22,7 @@ export default async function Layout({ children }: { children: ReactNode }) {
         </div>
         <MenuBar className="sticky bottom-0 flex w-full justify-center gap-5 border-t bg-card p-3 sm:hidden" />
       </div>
+      <Toaster />
     </SessionProvider>
   );
 }
