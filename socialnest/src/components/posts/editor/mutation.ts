@@ -6,7 +6,7 @@ import {
 } from "@tanstack/react-query";
 import { submitPost } from "./actions";
 import { useToast } from "@/components/ui/use-toast";
-import { PostsPage } from "@/lib/types";
+import { PostData, PostsPage } from "@/lib/types";
 import { useSession } from "@/app/(main)/SessionProvider";
 
 // simpler one in case there is error in the experimental version of this mutation
@@ -64,81 +64,101 @@ import { useSession } from "@/app/(main)/SessionProvider";
 
 //   return mutation;
 // }
+
+// Define the OptimisticPost interface
+interface OptimisticPost {
+  id: string;
+  content: string;
+  createdAt: Date;
+  userId: string;
+  user: {
+    id: string;
+    username: string;
+    displayName: string;
+    avatarUrl: string | null;
+  };
+}
+
+// Define the MutationContext interface
+interface MutationContext {
+  previousData: InfiniteData<PostsPage> | undefined;
+  tempId: string;
+}
 function generateId() {
   return `${Date.now()}-${Math.floor(Math.random() * 10000)}`;
 }
 
-// const id = generateId();
 export function useSubmitPostMutation() {
-  const { user } = useSession(); // Get user data from session
+  const { user } = useSession(); // Directly using user as per your setup
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const mutation = useMutation({
+  const mutation = useMutation<PostData, Error, string, MutationContext>({
     mutationFn: submitPost,
 
-    onMutate: async (content) => {
+    onMutate: async (content: string) => {
       const queryKey = ["post-feed", "for-you"];
-      await queryClient.cancelQueries(queryKey);
+      await queryClient.cancelQueries({ queryKey } as QueryFilters);
 
-      // Get existing cache
       const previousData =
         queryClient.getQueryData<InfiniteData<PostsPage>>(queryKey);
 
-      // Generate a unique temporary ID for the optimistic post
       const tempId = generateId();
 
-      // Optimistically update the cache
+      const optimisticPost: OptimisticPost = {
+        id: tempId,
+        content,
+        createdAt: new Date(),
+        userId: user?.id || "unknown",
+        user: {
+          id: user?.id || "unknown",
+          username: user?.username || "Anonymous",
+          displayName: user?.displayName || "User",
+          avatarUrl: user?.avatarUrl || null,
+        },
+      };
+
       queryClient.setQueryData<InfiniteData<PostsPage>>(queryKey, (oldData) => {
-        const firstPage = oldData?.pages[0];
+        if (!oldData) return oldData;
 
-        if (firstPage) {
-          return {
-            ...oldData,
-            pages: [
-              {
-                posts: [
-                  {
-                    id: tempId, // Temporary unique ID
-                    content,
-                    createdAt: new Date(), // Temporary timestamp
-                    user: {
-                      id: user?.id || "unknown",
-                      username: user?.username || "Anonymous",
-                      displayName: user?.displayName || "User",
-                      avatarUrl: user?.avatarUrl || null,
-                    },
-                  },
-                  ...firstPage.posts,
-                ],
-                nextCursor: firstPage.nextCursor,
-              },
-              ...oldData.pages.slice(1),
-            ],
-          };
-        }
-        return oldData;
-      });
+        const firstPage = oldData.pages[0];
+        if (!firstPage) return oldData;
 
-      // Return context with previous data for rollback
-      return { previousData, tempId };
-    },
-
-    onSuccess: (newPost, variables, context) => {
-      const queryKey = ["post-feed", "for-you"];
-      queryClient.setQueryData<InfiniteData<PostsPage>>(queryKey, (oldData) => {
-        const firstPage = oldData?.pages[0];
         return {
           ...oldData,
           pages: [
             {
-              posts: firstPage.posts.map(
-                (post) => (post.id === context.tempId ? newPost : post), // Replace temp post with actual post from the server
-              ),
-              nextCursor: firstPage.nextCursor,
+              ...firstPage,
+              posts: [optimisticPost as PostData, ...firstPage.posts],
             },
             ...oldData.pages.slice(1),
           ],
+        };
+      });
+
+      // Return context with previousData and tempId
+      return { previousData, tempId };
+    },
+
+    onSuccess: (newPost, variables, context) => {
+      if (!context) return;
+
+      const queryKey = ["post-feed", "for-you"];
+      queryClient.setQueryData<InfiniteData<PostsPage>>(queryKey, (oldData) => {
+        if (!oldData) return oldData;
+
+        return {
+          ...oldData,
+          pages: oldData.pages.map((page, index) =>
+            index === 0
+              ? {
+                  ...page,
+                  posts: page.posts.map((post) =>
+                    post.id === context.tempId ? newPost : post,
+                  ),
+                }
+              : page,
+          ),
         };
       });
 
@@ -147,9 +167,10 @@ export function useSubmitPostMutation() {
       });
     },
 
-    onError: (error, newPost, context) => {
+    onError: (error, variables, context) => {
+      if (!context) return;
+
       const queryKey = ["post-feed", "for-you"];
-      // Rollback the optimistic update in case of failure
       queryClient.setQueryData(queryKey, context.previousData);
 
       toast({

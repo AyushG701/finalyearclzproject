@@ -1,0 +1,52 @@
+// "use server";
+
+// import { validateRequest } from "@/auth";
+// import prisma from "@/lib/prisma";
+// import { postDataInclude } from "@/lib/types";
+
+// export async function deletePost(id: string) {
+//   const { user } = await validateRequest();
+
+//   if (!user) throw new Error("unauthorized");
+
+//   const post = await prisma.post.findUnique({
+//     where: { id },
+//   });
+
+//   if (!post) throw new Error("Post now found");
+
+//   if (post.userId !== user.id) throw new Error("Unauthorized");
+
+//   const deletedPost = await prisma.post.delete({
+//     where: { id },
+//     include: postDataInclude,
+//   });
+
+//   return deletedPost;
+// } ///mutation
+
+// import { PostData } from "@/lib/types";
+// import { useToast } from "../ui/use-toast";
+// import { useMutation, useQueryClient } from "@tanstack/react-query";
+// import { usePathname, useRouter } from "next/navigation";
+// import { deletePost } from "./actions";
+
+// export function useDeletePostMutation(post: PostData) {
+//   const { toast } = useToast();
+//   const queryClient = useQueryClient();
+
+//   const router = useRouter();
+//   const pathname = usePathname();
+
+//   const mutation = useMutation({
+//     mutationFn: deletePost,
+//     onSuccess: async () => {},
+//     onError(error) {
+//       console.error(error);
+//       toast({
+//         variant: "destructive",
+//         description: "Failed to delete post. Please try again ",
+//       });
+//     },
+//   });
+// }
