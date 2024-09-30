@@ -9,7 +9,8 @@ import { PostsPage } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import InfiniteScrollContainer from "@/components/InfiniteScrollContainer";
 import PostsLoadingSkeleton from "@/components/posts/PostsLoadingSkeleton";
-export default function ForYouFeed() {
+
+export default function FollowingFeed() {
   const {
     data,
     fetchNextPage,
@@ -18,11 +19,11 @@ export default function ForYouFeed() {
     isFetchingNextPage,
     status,
   } = useInfiniteQuery({
-    queryKey: ["post-feed", "for-you"],
+    queryKey: ["post-feed", "following"],
     queryFn: ({ pageParam }) =>
       kyInstance
         .get(
-          "/api/posts/for-you",
+          "/api/posts/following",
           pageParam ? { searchParams: { cursor: pageParam } } : {},
         )
         .json<PostsPage>(),
@@ -38,7 +39,9 @@ export default function ForYouFeed() {
 
   if (status === "success" && !posts.length && !hasNextPage) {
     return (
-      <p className="text-center text-muted-foreground">No posts found .</p>
+      <p className="text-center text-muted-foreground">
+        No posts found . Start following people to see their post here
+      </p>
     );
   }
 
