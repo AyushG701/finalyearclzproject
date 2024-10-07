@@ -13,6 +13,7 @@ import { notFound } from "next/navigation";
 import { cache } from "react";
 import UserPosts from "./UserPosts";
 import Linkify from "@/components/Linkify";
+import EditProfileButton from "./EditProfileButton";
 
 interface PageProps {
   params: { username: string };
@@ -108,7 +109,7 @@ async function UserProfile({ user, loggedInUserId }: UserProfileProps) {
           <div>Member since {formatDate(user.createdAt, "MMM d, yyyy")}</div>
           <div className="flex items-center gap-3">
             <span>
-              Posts:{" "}
+              Posts:
               <span className="font-semibold">
                 {formatNumber(user._count.posts)}
               </span>
@@ -117,7 +118,7 @@ async function UserProfile({ user, loggedInUserId }: UserProfileProps) {
           </div>
         </div>
         {user.id === loggedInUserId ? (
-          <Button>Edit profile</Button>
+          <EditProfileButton user={user} />
         ) : (
           <FollowButton userId={user.id} initialState={followerInfo} />
         )}
