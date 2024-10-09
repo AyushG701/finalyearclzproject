@@ -9,10 +9,16 @@ import { useToast } from "@/components/ui/use-toast";
 import { PostData, PostsPage } from "@/lib/types";
 import { useSession } from "@/app/(main)/SessionProvider";
 
+interface PostInput {
+  content: string;
+  mediaIds: string[];
+}
+
 interface OptimisticPost {
   id: string;
   content: string;
   createdAt: Date;
+  mediaIds: string[];
   userId: string;
   user: {
     id: string;
@@ -36,10 +42,10 @@ export function useSubmitPostMutation() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const mutation = useMutation<PostData, Error, string, MutationContext>({
+  const mutation = useMutation<PostData, Error, PostInput, MutationContext>({
     mutationFn: submitPost,
 
-    onMutate: async (content: string) => {
+    onMutate: async (postInput) => {
       const queryFilter = {
         queryKey: ["post-feed"],
         predicate: (query: any) =>
@@ -64,7 +70,8 @@ export function useSubmitPostMutation() {
 
       const optimisticPost: OptimisticPost = {
         id: tempId,
-        content,
+        content: postInput.content,
+        mediaIds: postInput.mediaIds,
         createdAt: new Date(),
         userId: user?.id || "unknown",
         user: {
@@ -89,7 +96,7 @@ export function useSubmitPostMutation() {
               pages: [
                 {
                   ...firstPage,
-                  posts: [optimisticPost as PostData, ...firstPage.posts],
+                  posts: [optimisticPost, ...firstPage.posts],
                 },
                 ...oldData.pages.slice(1),
               ],
