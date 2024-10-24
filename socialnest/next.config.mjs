@@ -11,10 +11,11 @@ const nextConfig = {
       {
         protocol: "https",
         hostname: "utfs.io",
-        pathname: `/a/${process.env.NEXT_PUBLIC_UPLOADTHING_APP_ID}/*`,
+        pathname: `/a/**`,
       },
     ],
   },
 };
 
 export default nextConfig;
+// removed the path factor and need to work on this

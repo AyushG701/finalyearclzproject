@@ -40,7 +40,9 @@ export function getPostDataInclude(loggedInUserId: string) {
 
 export type PostData = Prisma.PostGetPayload<{
   include: ReturnType<typeof getPostDataInclude>;
-}>;
+}> & {
+  mediaUrls: string[]; // Adding the custom mediaUrls property
+};
 
 export interface PostsPage {
   posts: PostData[];
