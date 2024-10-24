@@ -39,6 +39,7 @@ export default function Post({ post }: PostProps) {
             <Link
               href={`/posts/${post.id}`}
               className="block text-sm text-muted-foreground hover:underline"
+              suppressHydrationWarning
             >
               {formatRelativeDate(post.createdAt)}
             </Link>
@@ -65,6 +66,7 @@ export default function Post({ post }: PostProps) {
 interface MediaPreviewsProps {
   attachments: Media[];
 }
+
 function MediaPreviews({ attachments }: MediaPreviewsProps) {
   return (
     <div
@@ -79,9 +81,11 @@ function MediaPreviews({ attachments }: MediaPreviewsProps) {
     </div>
   );
 }
+
 interface MediaPreviewProps {
   media: Media;
 }
+
 function MediaPreview({ media }: MediaPreviewProps) {
   if (media.type === "IMAGE") {
     return (
