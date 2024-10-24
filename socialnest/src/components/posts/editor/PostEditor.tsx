@@ -16,6 +16,7 @@ import "./styles.css";
 import useMediaUpload, { Attachment } from "./useMediaUpload";
 import { useDropzone } from "@uploadthing/react";
 import { ClipboardEvent, useRef } from "react";
+
 export default function PostEditor() {
   const { user } = useSession();
 
